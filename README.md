@@ -6,7 +6,7 @@ An interactive digital atlas of the Temple of All Religions (Вселенски�
 
 ## What's inside
 
-- A documentary film (7 min 25 s), playable in full or in nine chapters: [download the MP4](film/The_World_Folded_Into_One_Building.mp4)
+- A documentary film (7 min 25 s), which plays straight through, with chapter shortcuts: [download the MP4](film/The_World_Folded_Into_One_Building.mp4)
 - An interactive globe that links each hall to its homeland, with great-circle distances from the temple
 - Every hall shown with its video, photographs and text
 - An animation room, a timeline, a full photo gallery, and myths and facts

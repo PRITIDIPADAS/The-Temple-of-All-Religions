@@ -168,10 +168,10 @@ footer{padding:50px 0 80px;color:var(--muted);font-size:14px}
 
 <section id="film"><div class="wrap">
  <div class="kicker">Documentary</div>
- <h2>The film, chapter by chapter</h2>
- <p class="lede">About seven and a half minutes of real footage, maps, 3D globes, animation and music. Pick a chapter or let it play through.</p>
- <div style="margin-top:18px"><button class="btn solid" id="playFull">Play the full film</button><a class="btn" href="film/The_World_Folded_Into_One_Building.mp4" download>Download the full film (MP4, 1080p, 75 MB)</a></div>
- <div class="player"><video id="filmv" controls playsinline preload="metadata" poster="img/fig_globe_lines.jpg"></video><div class="chlist" id="chlist"></div></div>
+ <h2>The film</h2>
+ <p class="lede">About seven and a half minutes of real footage, maps, 3D globes, animation and music. It plays straight through; jump to any chapter from the list.</p>
+ <div style="margin-top:18px"><a class="btn" href="film/The_World_Folded_Into_One_Building.mp4" download>Download the full film (MP4, 1080p, 75 MB)</a></div>
+ <div class="player"><div style="position:relative"><video id="filmv" controls playsinline preload="auto" poster="img/fig_globe_lines.jpg" src="film/The_World_Folded_Into_One_Building.mp4"></video><button id="unmute" class="btn solid" style="display:none;position:absolute;left:16px;top:16px;margin:0">🔊 Tap for sound</button></div><div class="chlist" id="chlist"></div></div>
 </div></section>
 
 <section id="atlas"><div class="wrap">
@@ -268,11 +268,11 @@ function watch(v){v.muted=true;v.loop=true;v.playsInline=true;vio.observe(v)}
 // lightbox
 function lb(src){$('#lb img').src=src;$('#lb').style.display='flex'}$('#lb').onclick=()=>$('#lb').style.display='none';
 // ---------- FILM ----------
-const CH=window.CHAPTERS||[];const fv=$('#filmv');
-CH.forEach((c,i)=>{const b=document.createElement('button');b.innerHTML=`${c[1]}<small>${c[2]}</small>`;b.onclick=()=>{$$('#chlist button').forEach(x=>x.classList.remove('on'));b.classList.add('on');fv.src='film/'+c[0];fv.play().catch(()=>{})};$('#chlist').appendChild(b)});
-fv.addEventListener('ended',()=>{const bs=$$('#chlist button');const i=bs.findIndex(b=>b.classList.contains('on'));if(i>=0&&i<bs.length-1)bs[i+1].click()});
-$('#playFull').onclick=()=>{$$('#chlist button').forEach(x=>x.classList.remove('on'));fv.src='film/The_World_Folded_Into_One_Building.mp4';fv.play().catch(()=>{})};
-if(CH.length){fv.src='film/'+CH[0][0];$('#chlist button').classList.add('on')}
+const CH=window.CHAPTERS||[];const fv=$('#filmv');const T=[0,31,75,119,159.5,311.1,336.6,368.1,387.6];
+CH.forEach((c,i)=>{const b=document.createElement('button');b.innerHTML=`${c[1]}<small>${c[2]}</small>`;b.onclick=()=>{fv.currentTime=T[i]+0.05;fv.play().catch(()=>{})};$('#chlist').appendChild(b)});
+fv.addEventListener('timeupdate',()=>{let k=0;T.forEach((t,i)=>{if(fv.currentTime>=t)k=i});$$('#chlist button').forEach((b,i)=>b.classList.toggle('on',i===k))});
+const um=$('#unmute');um.onclick=()=>{fv.muted=false;um.style.display='none';fv.play().catch(()=>{})};fv.addEventListener('volumechange',()=>{if(!fv.muted)um.style.display='none'});
+let started=false;new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&!started){started=true;fv.muted=false;fv.play().catch(()=>{fv.muted=true;um.style.display='block';fv.play().catch(()=>{})})}}),{threshold:.5}).observe(fv);
 // ---------- ATLAS ----------
 const svg=d3.select('#globe');let scale=370,rot=[-55,-35];const proj=d3.geoOrthographic().translate([400,400]).clipAngle(90);const gp=d3.geoPath(proj);
 svg.append('defs').html('<radialGradient id="sea" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#22407e"/><stop offset="1" stop-color="#0f1d44"/></radialGradient><filter id="glw"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#f3cf7a" flood-opacity=".9"/></filter>');
