@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The World Folded Into One Building</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+<script src="d3.min.js"></script>
+<script src="topojson-client.min.js"></script>
+<script src="world.js"></script><script src="data.js"></script>
+<style>
+:root{--night:#0c1530;--ink:#0a1024;--cream:#f1e8d4;--paper:#f7f1e3;--gold:#d9a84e;--gold2:#f3cf7a;--terra:#c8643c;--muted:#b9b1a0;--line:rgba(241,232,212,.16)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--night);color:var(--cream);font-family:Inter,system-ui,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.serif{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600}
+.bn{font-family:'Noto Sans Bengali',Inter,sans-serif}
+a{color:var(--gold2)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 28px}
+.kicker{font-weight:600;font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+nav.top{position:sticky;top:0;z-index:50;background:rgba(10,16,36,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:18px;height:58px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+nav.top .brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;margin-right:auto;color:var(--cream);text-decoration:none}
+nav.top a.l{color:#d7cfbe;text-decoration:none;font-size:14px}nav.top a.l:hover{color:var(--gold2)}
+section{padding:100px 0;border-bottom:1px solid var(--line);position:relative}
+section h2{font-size:clamp(38px,5vw,64px);line-height:1.04;margin:12px 0 18px}
+.lede{font-size:20px;max-width:780px;color:#e2dacb}
+/* hero */
+#hero{min-height:100vh;padding:0;display:flex;align-items:flex-end;overflow:hidden}
+#hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#hero .shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,16,36,.96) 0%,rgba(10,16,36,.55) 45%,rgba(10,16,36,.25) 100%)}
+#hero .wrap{position:relative;z-index:2;width:100%;padding-bottom:90px}
+#hero h1{font-size:clamp(52px,8vw,120px);line-height:.96;margin:16px 0 10px;max-width:960px}
+#hero .ru{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold2);font-style:italic}
+.chips{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}
+.chip{border:1px solid rgba(217,168,78,.5);padding:10px 16px;border-radius:3px;background:rgba(10,16,36,.55)}
+.chip b{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold2);display:block;line-height:1}
+.chip span{font-size:13px;color:var(--muted)}
+.btn{display:inline-block;padding:13px 22px;border:1px solid var(--gold);color:var(--cream);text-decoration:none;margin:6px 10px 0 0;font-weight:500;background:none;cursor:pointer;font:inherit}
+.btn.solid{background:var(--gold);color:var(--ink)}
+/* intro */
+.intro{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.intro video,.intro img{width:100%;border-radius:3px;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.pull{font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1.2;font-style:italic;border-left:3px solid var(--gold);padding-left:22px;margin:26px 0}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
+.facts div{border-top:2px solid var(--gold);padding-top:12px}
+.facts b{font-family:'Cormorant Garamond',serif;font-size:46px;color:var(--gold2);display:block;line-height:1}
+.facts span{font-size:15px;color:#d4ccbb}
+/* film */
+#film{background:#070c1e}
+.player{display:grid;grid-template-columns:1fr 300px;gap:24px;margin-top:26px}
+.player video{width:100%;border-radius:4px;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.chlist button{display:block;width:100%;text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--cream);padding:11px 14px;margin-bottom:8px;border-radius:3px;font:inherit;font-size:15px;cursor:pointer}
+.chlist button.on{border-color:var(--gold);background:rgba(217,168,78,.14)}
+.chlist button small{display:block;color:var(--muted);font-size:12.5px}
+/* atlas */
+.atlas{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:30px;margin-top:30px}
+.globeBox{position:relative;background:radial-gradient(circle at 50% 50%,#17295a,#0a1430 70%);border:1px solid var(--line);border-radius:4px;aspect-ratio:1/1;touch-action:none}
+.globeBox svg{width:100%;height:100%;cursor:grab}
+.layers,.filt{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.layers button,.filt button{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--cream);padding:8px 13px;border-radius:20px;font:inherit;font-size:14px;cursor:pointer}
+.layers button.on,.filt button.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.zoomBtns{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px}
+.zoomBtns button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(10,16,36,.8);color:var(--cream);font-size:20px;cursor:pointer}
+.panel{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:4px;padding:22px;max-height:900px;overflow:auto}
+.panel h3{font-size:34px;margin:6px 0 4px;line-height:1.05}
+.panel .km{font-family:'Cormorant Garamond',serif;font-size:46px;color:var(--gold2);line-height:1}
+.panel video,.panel img{width:100%;border-radius:3px;margin:12px 0 6px}
+.anchors{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 18px}
+.anchors button{background:none;border:1px solid rgba(217,168,78,.45);color:var(--cream);padding:6px 10px;border-radius:3px;font:inherit;font-size:13px;cursor:pointer}
+.anchors button.on{background:rgba(217,168,78,.22);border-color:var(--gold2)}
+.status{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:2px}
+.status.open{background:rgba(63,143,107,.25);color:#9be0bf}.status.building{background:rgba(200,100,60,.25);color:#f0b496}
+.local{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+.local svg{width:100%;background:var(--paper);border-radius:4px}
+/* halls */
+.hall{display:grid;grid-template-columns:1.2fr 1fr;gap:34px;align-items:start;padding:44px 0;border-top:1px solid var(--line)}
+.hall:nth-child(even){grid-template-columns:1fr 1.2fr}.hall:nth-child(even) .media{order:2}
+.media video,.media .mainimg{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;display:block;background:#000}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px}
+.strip img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px;cursor:zoom-in}
+.hall h3{font-size:44px;margin:8px 0 2px;line-height:1.02}
+.hall .bnn{font-size:17px;color:var(--gold2)}
+.hall .km{font-family:'Cormorant Garamond',serif;font-size:56px;color:var(--gold2);line-height:1;margin:14px 0 2px}
+.hall .anc{color:var(--muted);font-size:14px}
+.hall p{font-size:17px;color:#ddd5c4}
+.mini{width:100%;max-width:300px;aspect-ratio:1/1;display:block;margin-top:10px}
+/* anims */
+.anims{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:22px;margin-top:26px}
+.anims figure{margin:0}.anims video{width:100%;border-radius:4px;display:block;background:#000}
+.anims figcaption{padding:10px 2px}.anims b{font-family:'Cormorant Garamond',serif;font-size:26px;display:block;line-height:1.1}.anims span{font-size:14px;color:var(--muted)}
+/* timeline */
+.tl{position:relative;margin-top:30px;padding-left:40px}
+.tl:before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--gold),rgba(217,168,78,.15))}
+.ev{position:relative;padding:0 0 26px 0;display:grid;grid-template-columns:150px 1fr;gap:18px}
+.ev:before{content:'';position:absolute;left:-34px;top:12px;width:14px;height:14px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
+.ev .yr{font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--gold2);line-height:1.05}
+.ev h4{margin:0 0 4px;font-size:18px;color:var(--cream)}.ev p{margin:0;font-size:15.5px;color:#d4ccbb}
+.c-region{color:#7fb0e8}.c-khanov{color:var(--gold2)}.c-temple{color:#f0a37a}.c-bd{color:#86d3a8}
+/* gallery */
+.gal{columns:4 260px;column-gap:12px;margin-top:26px}
+.gal img{width:100%;margin:0 0 12px;border-radius:3px;display:block;break-inside:avoid;cursor:zoom-in;transition:transform .3s}
+.gal img:hover{transform:scale(1.02)}
+#lb{position:fixed;inset:0;background:rgba(5,8,20,.94);display:none;align-items:center;justify-content:center;z-index:99;cursor:zoom-out}
+#lb img{max-width:92vw;max-height:88vh;border-radius:4px}
+/* myths */
+.myths{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;margin-top:26px}
+.myth{border:1px solid var(--line);border-radius:4px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.myth .q{padding:18px;font-family:'Cormorant Garamond',serif;font-size:23px;line-height:1.15;background:rgba(255,255,255,.03)}
+.myth .a{padding:18px;background:var(--paper);color:#2b2318;font-size:14.5px}
+.myth .a b{display:block;color:var(--terra);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+/* compare */
+.typo{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:30px 0}
+.typo .t{text-align:center;padding:20px;border:1px solid var(--line);border-radius:4px}.typo .t.on{border-color:var(--gold);background:rgba(217,168,78,.08)}
+.typo svg{width:100%;height:150px}.typo h3{font-size:34px;margin:6px 0 2px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--gold);font-size:12px;letter-spacing:.12em;text-transform:uppercase}tr.k td{background:rgba(217,168,78,.1)}
+/* learn */
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-top:20px}
+.gl{border:1px solid var(--line);padding:14px 16px;border-radius:4px}.gl b{font-family:'Cormorant Garamond',serif;font-size:24px}.gl .bt{color:var(--gold2);margin-left:8px}
+.gl p{margin:4px 0 0;font-size:14px;color:#d4ccbb}
+.quiz{max-width:860px;margin-top:24px}.qi{border:1px solid var(--line);border-radius:4px;padding:16px 18px;margin-bottom:10px}
+.qi .qq{font-weight:600}.qi .qqb{color:var(--gold2);font-size:15.5px;margin:2px 0 8px}
+.qi label{display:block;padding:5px 10px;border-radius:3px;cursor:pointer;font-size:15px}.qi label.right{background:rgba(63,143,107,.3)}.qi label.wrong{background:rgba(200,100,60,.3)}
+.score{font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--gold2)}
+.note{background:rgba(217,168,78,.08);border-left:3px solid var(--gold);padding:14px 18px;font-size:15px;margin:24px 0}
+footer{padding:50px 0 80px;color:var(--muted);font-size:14px}
+@media (max-width:900px){.intro,.atlas,.local,.hall,.hall:nth-child(even),.player{grid-template-columns:1fr}.hall:nth-child(even) .media{order:0}.facts{grid-template-columns:1fr 1fr}.typo{grid-template-columns:1fr}.myth{grid-template-columns:1fr}.ev{grid-template-columns:1fr}}
+</style></head>
+<body>
+<nav class="top"><div class="wrap">
+ <a class="brand" href="#hero">The World Folded Into One Building</a>
+ <a class="l" href="#film">Film</a><a class="l" href="#atlas">Atlas</a><a class="l" href="#halls">Halls</a><a class="l" href="#animations">Animations</a>
+ <a class="l" href="#timeline">Timeline</a><a class="l" href="#gallery">Gallery</a><a class="l" href="#myths">Myths</a><a class="l" href="#compare">Compare</a><a class="l" href="#learn">Learn</a><a class="l" href="#about">About</a>
+</div></nav>
+
+<section id="hero"><video src="vid/hero.mp4" autoplay muted loop playsinline poster="img/v_domes.jpg"></video><div class="shade"></div>
+<div class="wrap">
+ <div class="kicker">A digital atlas · Kazan, Russia</div>
+ <h1>The World Folded Into One Building</h1>
+ <div class="ru">Мир, сложенный в одно здание</div>
+ <p class="lede" style="margin-top:20px">One building on the Volga holds the sacred art of the whole world. Walk through it, follow its lines across the globe, and watch it in motion.</p>
+ <div class="chips">
+  <div class="chip"><b>4,892 km</b><span>from Dhaka to Kazan</span></div>
+  <div class="chip"><b>1994</b><span>first spade, still growing</span></div>
+  <div class="chip"><b>14 + 4</b><span>halls open + being built</span></div>
+  <div class="chip"><b>10,619 km</b><span>the longest line, to Mexico</span></div>
+ </div>
+ <a class="btn solid" href="#film">Watch the film</a><a class="btn" href="#atlas">Explore the atlas</a><a class="btn" href="#halls">Walk the halls</a>
+</div></section>
+
+<section id="intro"><div class="wrap intro">
+ <div>
+  <div class="kicker">Welcome</div>
+  <h2>A house that grew into a map of the world</h2>
+  <p>In Staroye Arakchino, a former village on the western edge of Kazan, the painter Ildar Khanov began building beside his parents’ wooden house in 1994. He had no architect and no fixed plan. He wanted one building where the art of every faith could stand together. Thirty years later his brother Ilgiz is still adding rooms.</p>
+  <p>From the road it looks like a city skyline squeezed onto one plot: an onion dome next to a minaret, a pagoda roof beside a golden dome. Inside, each hall belongs to a tradition, and each tradition comes from somewhere. Orthodox icons point to Istanbul, the dancing Shiva to Varanasi, the gilded Buddha to Bodh Gaya, the Olmec heads to Mexico.</p>
+  <div class="pull">This atlas unfolds those lines, measures them, and lets you walk through the rooms they come from.</div>
+  <p>It is a cultural centre and museum, not a place of worship. That is part of its charm: visitors of any faith, or none, walk through the same doors and look at the same walls.</p>
+ </div>
+ <video src="vid/garden.mp4" autoplay muted loop playsinline></video>
+</div>
+<div class="wrap facts">
+ <div><b>55.80° N</b><span>48.98° E, on the bank of the Volga in Kazan, capital of Tatarstan</span></div>
+ <div><b>8.2 km</b><span>west of the Kazan Kremlin, a UNESCO World Heritage Site</span></div>
+ <div><b>16</b><span>domes planned by Ildar Khanov, one for each religion</span></div>
+ <div><b>300,000+</b><span>paying visitors a year (owner’s estimate, 2023)</span></div>
+</div></section>
+
+<section id="film"><div class="wrap">
+ <div class="kicker">Documentary</div>
+ <h2>The film, chapter by chapter</h2>
+ <p class="lede">About seven and a half minutes of real footage, maps, 3D globes, animation and music. Pick a chapter or let it play through.</p>
+ <div class="player"><video id="filmv" controls playsinline preload="metadata" poster="img/fig_globe_lines.jpg"></video><div class="chlist" id="chlist"></div></div>
+</div></section>
+
+<section id="atlas"><div class="wrap">
+ <div class="kicker">Interactive atlas</div>
+ <h2>Unfold the temple</h2>
+ <p class="lede">Drag the globe, zoom, switch layers, or pick a hall. Distances are great-circle kilometres from the temple, calculated by the project.</p>
+ <div class="atlas">
+  <div>
+   <div class="layers" id="layers"><button data-k="homes" class="on">Homelands</button><button data-k="multi">Multi-faith world</button><button data-k="route">Volga route</button><button data-k="dhaka">From Dhaka</button></div>
+   <div class="globeBox"><svg id="globe" viewBox="0 0 800 800"></svg><div class="zoomBtns"><button id="zin">+</button><button id="zout">−</button><button id="zres" style="font-size:14px">⟲</button></div></div>
+  </div>
+  <div class="panel"><div class="kicker">Choose a hall</div><div class="anchors" id="anchorBtns"></div><div id="card"></div></div>
+ </div>
+ <div class="local">
+  <div><div class="kicker">Site and situation</div><h3 class="serif" style="font-size:40px;margin:8px 0">Why here?</h3>
+   <p>The temple stands on a narrow strip of old village land. The Volga, widened since 1955–57 into the Kuybyshev Reservoir, lies in front, and the railway to Moscow runs right beside it. Inside the walls is the wooden house Ildar Khanov was born in.</p>
+   <p>Its position is perfect for visitors: on the road and railway west of Kazan, 8.2 km from the Kremlin, about 20 km from the island town of Sviyazhsk and 19 km from the Raifa Monastery. Tour buses link all of them into one day on the Volga.</p></div>
+  <svg id="localMap" viewBox="0 0 800 520"></svg>
+ </div>
+</div></section>
+
+<section id="halls"><div class="wrap">
+ <div class="kicker">Halls and their homelands</div>
+ <h2>Walk the halls</h2>
+ <p class="lede">Every hall, with its footage, its photographs and the place on Earth it points to. Fourteen halls were open in August 2023, and four more were being finished in 2025.</p>
+ <div class="filt" id="hallFilt"><button data-s="all" class="on">All halls</button><button data-s="open">Open</button><button data-s="building">Being finished</button></div>
+ <div id="hallList"></div>
+</div></section>
+
+<section id="animations"><div class="wrap">
+ <div class="kicker">Animation room</div>
+ <h2>The story in motion</h2>
+ <p class="lede">Motion graphics from the film: globes, maps, charts and the cartoon house that grew. They play on a loop.</p>
+ <div class="anims" id="anims"></div>
+</div></section>
+
+<section id="timeline"><div class="wrap">
+ <div class="kicker">Timeline</div>
+ <h2>A thousand years on the Volga</h2>
+ <div class="filt" id="tlFilt"><button data-c="all" class="on">All</button><button data-c="region"><span class="c-region">●</span> Region</button><button data-c="khanov"><span class="c-khanov">●</span> Ildar Khanov</button><button data-c="temple"><span class="c-temple">●</span> The temple</button><button data-c="bd"><span class="c-bd">●</span> Russia and Bengal</button></div>
+ <div class="tl" id="tl"></div>
+</div></section>
+
+<section id="gallery"><div class="wrap">
+ <div class="kicker">Gallery</div>
+ <h2>Every photograph</h2>
+ <p class="lede">All the pictures in the collection, outside and in. Click any photo to see it large.</p>
+ <div class="gal" id="gal"></div>
+</div></section>
+
+<section id="myths"><div class="wrap">
+ <div class="kicker">Myths and facts</div>
+ <h2>What people often get wrong</h2>
+ <div class="myths" id="mythGrid"></div>
+</div></section>
+
+<section id="compare"><div class="wrap">
+ <div class="kicker">Chorus, silence, neighbours</div>
+ <h2>Three ways to build for many faiths</h2>
+ <div class="typo">
+  <div class="t"><svg viewBox="0 0 300 150"><rect x="90" y="35" width="120" height="110" fill="#e8e0cf"/><rect x="128" y="80" width="44" height="65" fill="#0c1530"/></svg><h3>Silence</h3><p>A quiet room with every symbol removed, like the UN Meditation Room in New York.</p></div>
+  <div class="t"><svg viewBox="0 0 300 150"><rect x="40" y="65" width="60" height="80" fill="#c8643c"/><rect x="200" y="65" width="60" height="80" fill="#2f8f8a"/><rect x="115" y="40" width="70" height="105" fill="#e8e0cf"/><path d="M120 40 A30 30 0 0 1 180 40Z" fill="#f3cf7a"/></svg><h3>Neighbours</h3><p>Working houses of worship side by side: Bern (2014), Abu Dhabi (2023), Berlin (planned).</p></div>
+  <div class="t on"><svg viewBox="0 0 300 150"><rect x="50" y="90" width="200" height="55" fill="#b4573a"/><path d="M85 90 C60 75 65 50 85 40 C105 50 110 75 85 90Z" fill="#3f8f6b"/><path d="M120 90 A28 28 0 0 1 176 90Z" fill="#e2b54f"/><path d="M190 90 L205 35 L220 90Z" fill="#2f8f8a"/><path d="M228 90 Q245 77 262 90Z" fill="#c0392b"/></svg><h3>Chorus</h3><p>The art of every tradition together in one building. This is Kazan.</p></div>
+ </div>
+ <p style="max-width:880px">Among the eleven buildings we compared, Kazan is the only one built by one artist’s family around their own home over three decades. It looks like a “neighbours” building, works like a museum, and was made the way lone visionaries build, like the French postman Ferdinand Cheval and his Ideal Palace.</p>
+ <div style="overflow-x:auto;margin-top:20px"><table id="multiTable"><thead><tr><th>Building</th><th>Place</th><th>Dates</th><th>Type</th><th>Worship</th><th>km from Kazan</th></tr></thead><tbody></tbody></table></div>
+</div></section>
+
+<section id="learn"><div class="wrap">
+ <div class="kicker">Learn · English and Bangla</div>
+ <h2>From the Volga to the Padma</h2>
+ <p class="lede">Seen from Dhaka, three of the halls point almost home: Bodh Gaya is 558 km away, Varanasi 771 km and Vrindavan 1,344 km. Try the quiz, then learn the words.</p>
+ <p class="bn" style="color:var(--gold2);font-size:18px">ঢাকা থেকে বোধগয়া মাত্র ৫৫৮ কিলোমিটার। কুইজটি দিন, তারপর শব্দগুলো শিখুন।</p>
+ <div class="quiz" id="quiz"></div><div id="quizScore" class="score"></div>
+ <h3 class="serif" style="font-size:34px;margin-top:40px">Words to know · শব্দভান্ডার</h3>
+ <div class="gloss" id="gloss"></div>
+</div></section>
+
+<section id="about"><div class="wrap">
+ <div class="kicker">About this atlas</div>
+ <h2>How it was made</h2>
+ <p class="lede">Made in Dhaka. The facts come from a dated fact base of 136 sources, including the scholarly study by V. V. Barashkov (2025), local reporting from Kazan, Russpass, culture.ru and UNESCO. Distances are our own haversine calculations from 55.8006° N, 48.9750° E. Maps use Natural Earth data. Footage and photographs come from the project collection; maps, charts, animations and the film are the project’s own work.</p>
+</div></section>
+<footer><div class="wrap">The World Folded Into One Building · Мир, сложенный в одно здание · A digital atlas from Dhaka, 2026.</div></footer>
+<div id="lb"><img alt=""></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>n==null?'—':n.toLocaleString('en-US')+' km';
+const world=topojson.feature(WORLD,WORLD.objects.countries);
+// autoplay videos only when visible
+const vio=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;if(e.isIntersecting){const p=v.play();if(p)p.catch(()=>{})}else v.pause()}),{threshold:.2});
+function watch(v){v.muted=true;v.loop=true;v.playsInline=true;vio.observe(v)}
+// lightbox
+function lb(src){$('#lb img').src=src;$('#lb').style.display='flex'}$('#lb').onclick=()=>$('#lb').style.display='none';
+// ---------- FILM ----------
+const CH=window.CHAPTERS||[];const fv=$('#filmv');
+CH.forEach((c,i)=>{const b=document.createElement('button');b.innerHTML=`${c[1]}<small>${c[2]}</small>`;b.onclick=()=>{$$('#chlist button').forEach(x=>x.classList.remove('on'));b.classList.add('on');fv.src='film/'+c[0];fv.play().catch(()=>{})};$('#chlist').appendChild(b)});
+fv.addEventListener('ended',()=>{const bs=$$('#chlist button');const i=bs.findIndex(b=>b.classList.contains('on'));if(i>=0&&i<bs.length-1)bs[i+1].click()});
+if(CH.length){fv.src='film/'+CH[0][0];$('#chlist button').classList.add('on')}
+// ---------- ATLAS ----------
+const svg=d3.select('#globe');let scale=370,rot=[-55,-35];const proj=d3.geoOrthographic().translate([400,400]).clipAngle(90);const gp=d3.geoPath(proj);
+svg.append('defs').html('<radialGradient id="sea" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#22407e"/><stop offset="1" stop-color="#0f1d44"/></radialGradient><filter id="glw"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#f3cf7a" flood-opacity=".9"/></filter>');
+const sph=svg.append('path').attr('fill','url(#sea)'),grat=svg.append('path').attr('fill','none').attr('stroke','rgba(241,232,212,.08)'),land=svg.append('path').attr('fill','#efe6d2').attr('stroke','#c9bea6').attr('stroke-width',.5);
+const gL=svg.append('g'),gP=svg.append('g'),gT=svg.append('g');let layer='homes',cur='orthodox',dash=0;
+function data(){const L=[],P=[];
+ if(layer==='homes')HALLS.forEach(h=>{if(h.ll&&h.km>20){L.push({a:TEMPLE,b:h.ll,on:h.id===cur,col:h.status==='building'?'#f0a37a':'#f3cf7a'});P.push({ll:h.ll,id:h.id,label:h.anchor.split(' (')[0]+' · '+fmt(h.km),on:h.id===cur})}});
+ if(layer==='multi')MULTI.forEach((m,i)=>P.push({ll:m.ll,label:m.n,on:true,col:i?'#86d3a8':'#f3cf7a'}));
+ if(layer==='route'){ROUTE.forEach((r,i)=>P.push({ll:[r[0],r[1]],label:r[2],on:true}));[2,3,4].forEach(i=>L.push({a:TEMPLE,b:[ROUTE[i][0],ROUTE[i][1]],col:'#c8643c'}));L.push({a:[ROUTE[0][0],ROUTE[0][1]],b:TEMPLE,col:'#c8643c'})}
+ if(layer==='dhaka'){FROMDHAKA.forEach(d=>{L.push({a:DHAKA,b:d[1],col:d[0]==='Kazan'?'#c8643c':'#86d3a8'});P.push({ll:d[1],label:d[0]+' · '+fmt(d[2]),on:true})});P.push({ll:DHAKA,label:'Dhaka',on:true})}
+ P.push({ll:TEMPLE,label:layer==='route'?'':'Temple',on:true,big:true});return{L,P}}
+function render(){proj.scale(scale).rotate(rot);sph.attr('d',gp({type:'Sphere'}));grat.attr('d',gp(d3.geoGraticule10()));land.attr('d',gp(world));
+ const {L,P}=data();const c=[-rot[0],-rot[1]];const vis=ll=>d3.geoDistance(ll,c)<Math.PI/2-.02;
+ gL.selectAll('path').data(L).join('path').attr('d',d=>gp({type:'LineString',coordinates:[d.a,d.b]})).attr('fill','none').attr('stroke',d=>d.col).attr('stroke-width',d=>d.on?3.6:2.2).attr('stroke-dasharray','8 6').attr('stroke-dashoffset',-dash).attr('filter',d=>d.on?'url(#glw)':null);
+ gP.selectAll('circle').data(P).join('circle').attr('cx',d=>proj(d.ll)[0]).attr('cy',d=>proj(d.ll)[1]).attr('r',d=>d.big?7:5).attr('fill',d=>d.col||'#f3cf7a').attr('stroke','#0c1530').attr('stroke-width',1.5).attr('display',d=>vis(d.ll)?null:'none').style('cursor',d=>d.id?'pointer':null).on('click',(e,d)=>{if(d.id)select(d.id)});
+ gT.selectAll('text').data(P.filter(p=>p.label&&(p.on||scale>600))).join('text').attr('x',d=>proj(d.ll)[0]+9).attr('y',d=>proj(d.ll)[1]-8).text(d=>d.label).attr('fill','#fff').attr('font-size',13).attr('font-family','Inter').attr('font-weight',600).attr('paint-order','stroke').attr('stroke','#0c1530').attr('stroke-width',3.5).attr('display',d=>vis(d.ll)?null:'none')}
+setInterval(()=>{dash=(dash+1)%28;gL.selectAll('path').attr('stroke-dashoffset',-dash)},60);
+svg.call(d3.drag().on('drag',e=>{const k=75/scale;rot=[rot[0]+e.dx*k,Math.max(-90,Math.min(90,rot[1]-e.dy*k))];render()}));
+svg.on('wheel',e=>{e.preventDefault();scale=Math.max(250,Math.min(2600,scale*(e.deltaY<0?1.12:.89)));render()},{passive:false});
+$('#zin').onclick=()=>{scale=Math.min(2600,scale*1.3);render()};$('#zout').onclick=()=>{scale=Math.max(250,scale/1.3);render()};$('#zres').onclick=()=>fly([-55,-35],370);
+function fly(r,s){const r0=rot.slice(),s0=scale;d3.transition().duration(1200).tween('fly',()=>t=>{const e=d3.easeCubicInOut(t);rot=[r0[0]+(r[0]-r0[0])*e,r0[1]+(r[1]-r0[1])*e];scale=s0+(s-s0)*e;render()})}
+$$('#layers button').forEach(b=>b.onclick=()=>{$$('#layers button').forEach(x=>x.classList.remove('on'));b.classList.add('on');layer=b.dataset.k;
+ if(layer==='route')fly([-48.9,-55.6],2600);else if(layer==='dhaka')fly([-75,-35],520);else if(layer==='multi')fly([-30,-35],330);else fly([-55,-35],370);render();
+ if(layer==='multi')$('#card').innerHTML='<h3>Buildings for many faiths</h3>'+MULTI.map(m=>`<div style="border-top:1px solid var(--line);padding:7px 0;font-size:14px"><b>${m.n}</b>, ${m.p} · ${m.y}<br><span style="color:var(--muted)">${m.t} · worship: ${m.w}</span></div>`).join('');
+ else if(layer==='route')$('#card').innerHTML='<h3>The Volga route</h3><video src="vid/garden.mp4"></video><p>Tours link the temple with the Kazan Kremlin (8.2 km), the island town of Sviyazhsk (20 km, UNESCO 2017), the Raifa Monastery (19 km, founded 1613) and Bolgar (92 km, where Islam came to the Volga in 922).</p>';
+ else if(layer==='dhaka')$('#card').innerHTML='<h3>The view from Dhaka</h3><p>From Dhaka, three of the temple’s homelands are close: Bodh Gaya 558 km, Varanasi 771 km, Vrindavan 1,344 km. Kazan itself is 4,892 km away.</p>';
+ else showCard(cur);$$('#card video').forEach(watch)});
+HALLS.forEach(h=>{const b=document.createElement('button');b.textContent=h.en.split(' (')[0].split(' ·')[0];b.dataset.id=h.id;b.onclick=()=>select(h.id);$('#anchorBtns').appendChild(b)});
+function stat(h){return `<span class="status ${h.status}">${h.status==='open'?'Open':'Being finished'}</span> <span style="font-size:13px;color:var(--muted)">${h.date}</span>`}
+function select(id){cur=id;if(layer!=='homes'){layer='homes';$$('#layers button').forEach(x=>x.classList.toggle('on',x.dataset.k==='homes'))}const h=HALLS.find(x=>x.id===id);if(h.ll&&h.km>20){const mid=d3.geoInterpolate(TEMPLE,h.ll)(.5);fly([-mid[0],-mid[1]],h.km>8000?280:h.km>3000?420:600)}showCard(id);render()}
+function showCard(id){const h=HALLS.find(x=>x.id===id);$$('#anchorBtns button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+ $('#card').innerHTML=`${stat(h)}<h3>${h.en}</h3><div class="km">${fmt(h.km)}</div><div style="font-size:13px;color:var(--muted)">Homeland anchor: ${h.anchor}</div>${h.vid?`<video src="vid/${h.vid}.mp4"></video>`:`<img src="img/${h.img[0]}.jpg" alt="">`}<p>${h.text}</p>`;$$('#card video').forEach(watch)}
+render();showCard(cur);
+// local map
+(function(){const m=d3.select('#localMap');const pr=d3.geoMercator().center([48.86,55.82]).scale(95000).translate([400,260]);const pa=d3.geoPath(pr);
+ const V=[[48.55,55.772],[48.62,55.778],[48.70,55.79],[48.80,55.80],[48.90,55.8045],[48.95,55.8012],[48.975,55.7988],[49.00,55.796],[49.05,55.787],[49.08,55.783],[49.10,55.775],[49.15,55.76],[49.20,55.745],[49.30,55.72],[49.30,55.68],[49.20,55.70],[49.15,55.72],[49.05,55.745],[48.98,55.765],[48.90,55.77],[48.80,55.76],[48.70,55.745],[48.62,55.742],[48.55,55.735],[48.55,55.772]];
+ m.append('path').attr('d',pa({type:'Polygon',coordinates:[V]})).attr('fill','#8fb3d9').attr('stroke','#6f97c4');
+ m.append('path').attr('d',pa({type:'LineString',coordinates:[[49.085,55.786],[49.095,55.796],[49.105,55.802],[49.12,55.81],[49.15,55.818],[49.2,55.826]]})).attr('fill','none').attr('stroke','#8fb3d9').attr('stroke-width',6);
+ m.append('path').attr('d',pa({type:'LineString',coordinates:[[49.1,55.79],[49.0,55.7985],[48.975,55.8018],[48.9,55.8075],[48.8,55.806],[48.7,55.83],[48.6,55.85]]})).attr('fill','none').attr('stroke','#2b2318').attr('stroke-width',2.5).attr('stroke-dasharray','8 5');
+ [[[49.1064,55.7986],[48.975,55.80056]],[[48.975,55.80056],[48.6597,55.7717]],[[48.975,55.80056],[48.7314,55.9042]]].forEach(l=>m.append('path').attr('d',pa({type:'LineString',coordinates:l})).attr('stroke','#c8643c').attr('stroke-width',3).attr('fill','none'));
+ [[49.1064,55.7986,'Kazan Kremlin · 8.2 km',8,-8],[48.975,55.80056,'Temple of All Religions',-90,-16],[48.6597,55.7717,'Sviyazhsk · 20 km',8,20],[48.7314,55.9042,'Raifa Monastery · 19 km',8,-8]].forEach(p=>{const xy=pr([p[0],p[1]]);m.append('circle').attr('cx',xy[0]).attr('cy',xy[1]).attr('r',7).attr('fill','#c8643c').attr('stroke','#fff').attr('stroke-width',2.5);m.append('text').attr('x',xy[0]+p[3]).attr('y',xy[1]+p[4]).text(p[2]).attr('font-family','Inter').attr('font-weight',600).attr('font-size',14).attr('fill','#2b2318').attr('paint-order','stroke').attr('stroke','#f7f1e3').attr('stroke-width',4)});
+ m.append('text').attr('x',300).attr('y',330).text('Volga (Kuybyshev Reservoir)').attr('font-family','Cormorant Garamond').attr('font-style','italic').attr('font-size',26).attr('fill','#3a5f8f');
+ m.append('text').attr('x',20).attr('y',505).text('Schematic. Rivers simplified; railway (dashed) drawn schematically.').attr('font-family','Inter').attr('font-size',11).attr('fill','#7a6a50')})();
+// ---------- HALLS ----------
+function miniGlobe(svgEl,h){const s=d3.select(svgEl);const pr=d3.geoOrthographic().scale(140).translate([150,150]);const ll=h.ll||TEMPLE;const mid=d3.geoInterpolate(TEMPLE,ll)(.5);pr.rotate([-mid[0],-Math.max(-40,Math.min(60,mid[1]))]);const p=d3.geoPath(pr);
+ s.append('path').attr('d',p({type:'Sphere'})).attr('fill','#16295a');s.append('path').attr('d',p(world)).attr('fill','#e9dfc8');s.append('path').attr('d',p({type:'LineString',coordinates:[TEMPLE,ll]})).attr('fill','none').attr('stroke','#f3cf7a').attr('stroke-width',3).attr('stroke-dasharray','6 5').attr('class','ant');
+ [TEMPLE,ll].forEach(q=>{const xy=pr(q);if(xy)s.append('circle').attr('cx',xy[0]).attr('cy',xy[1]).attr('r',5).attr('fill','#f3cf7a')})}
+let hf='all';function renderHalls(){const L=$('#hallList');L.innerHTML='';HALLS.filter(h=>hf==='all'||h.status===hf).forEach(h=>{const d=document.createElement('div');d.className='hall';
+ d.innerHTML=`<div class="media">${h.vid?`<video src="vid/${h.vid}.mp4" poster="img/${h.img[0]}.jpg"></video>`:`<img class="mainimg" src="img/${h.img[0]}.jpg" alt="">`}<div class="strip">${h.img.map(i=>`<img src="img/${i}.jpg" alt="">`).join('')}</div></div>
+ <div>${stat(h)}<h3>${h.en}</h3><div class="bnn bn">${h.bn}</div><p>${h.text}</p><div class="km">${fmt(h.km)}</div><div class="anc">Homeland anchor: ${h.anchor}</div><svg class="mini" viewBox="0 0 300 300"></svg></div>`;
+ L.appendChild(d);miniGlobe(d.querySelector('svg.mini'),h);d.querySelectorAll('video').forEach(watch);d.querySelectorAll('.strip img').forEach(i=>i.onclick=()=>lb(i.src))})}
+$$('#hallFilt button').forEach(b=>b.onclick=()=>{$$('#hallFilt button').forEach(x=>x.classList.remove('on'));b.classList.add('on');hf=b.dataset.s;renderHalls()});renderHalls();
+setInterval(()=>{$$('.ant').forEach(a=>a.setAttribute('stroke-dashoffset',-(Date.now()/60%22)))},60);
+// ---------- ANIMS ----------
+$('#anims').innerHTML=ANIMS.map(a=>`<figure><video src="anim/${a[0]}.mp4"></video><figcaption><b>${a[1]}</b><span>${a[2]}</span></figcaption></figure>`).join('');$$('#anims video').forEach(watch);
+// ---------- TIMELINE ----------
+function renderTL(c){$('#tl').innerHTML=TIMELINE.filter(e=>c==='all'||e.c===c).map(e=>`<div class="ev c-${e.c}"><div class="yr">${e.y}</div><div><h4>${e.t}</h4><p>${e.d}</p></div></div>`).join('')}
+$$('#tlFilt button').forEach(b=>b.onclick=()=>{$$('#tlFilt button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderTL(b.dataset.c)});renderTL('all');
+// ---------- GALLERY ----------
+$('#gal').innerHTML=(window.GALLERY||[]).map(f=>`<img loading="lazy" src="img/${f}" alt="">`).join('');$$('#gal img').forEach(i=>i.onclick=()=>lb(i.src));
+// ---------- MYTHS ----------
+$('#mythGrid').innerHTML=MYTHS.map(m=>`<div class="myth"><div class="q">“${m[0]}”</div><div class="a"><b>The facts</b>${m[1]}</div></div>`).join('');
+// ---------- TABLE ----------
+const hv=(a,b)=>Math.round(d3.geoDistance(a,b)*6371.0088);
+$('#multiTable tbody').innerHTML=MULTI.map((m,i)=>`<tr class="${i?'':'k'}"><td><b>${m.n}</b></td><td>${m.p}</td><td>${m.y}</td><td>${m.t}</td><td>${m.w}</td><td>${i?hv(TEMPLE,m.ll).toLocaleString('en-US'):'—'}</td></tr>`).join('');
+// ---------- QUIZ ----------
+let ans={};QUIZ.forEach((q,i)=>{const d=document.createElement('div');d.className='qi';d.innerHTML=`<div class="qq">${i+1}. ${q.q}</div><div class="qqb bn">${q.qb}</div>`+q.o.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"> ${o} <span class="bn" style="color:var(--gold2)">· ${q.ob[j]}</span></label>`).join('');$('#quiz').appendChild(d);
+ d.querySelectorAll('input').forEach(inp=>inp.onchange=()=>{ans[i]=+inp.value;d.querySelectorAll('label').forEach((l,j)=>{l.classList.remove('right','wrong');if(j===q.a)l.classList.add('right');else if(j===+inp.value)l.classList.add('wrong')});const n=Object.keys(ans).length,c=Object.entries(ans).filter(([k,v])=>QUIZ[k].a===v).length;$('#quizScore').textContent=`${c} / ${n} correct · সঠিক`})});
+$('#gloss').innerHTML=GLOSSARY.map(g=>`<div class="gl"><b>${g[0]}</b><span class="bt bn">${g[1]}</span><p>${g[2]}</p><p class="bn" style="color:#cfc6b4">${g[3]}</p></div>`).join('');
+$$('#intro video,#hero video').forEach(watch);
+</script></body></html>
