@@ -170,6 +170,7 @@ footer{padding:50px 0 80px;color:var(--muted);font-size:14px}
  <div class="kicker">Documentary</div>
  <h2>The film, chapter by chapter</h2>
  <p class="lede">About seven and a half minutes of real footage, maps, 3D globes, animation and music. Pick a chapter or let it play through.</p>
+ <div style="margin-top:18px"><button class="btn solid" id="playFull">Play the full film</button><a class="btn" href="film/The_World_Folded_Into_One_Building.mp4" download>Download the full film (MP4, 1080p, 75 MB)</a></div>
  <div class="player"><video id="filmv" controls playsinline preload="metadata" poster="img/fig_globe_lines.jpg"></video><div class="chlist" id="chlist"></div></div>
 </div></section>
 
@@ -270,6 +271,7 @@ function lb(src){$('#lb img').src=src;$('#lb').style.display='flex'}$('#lb').onc
 const CH=window.CHAPTERS||[];const fv=$('#filmv');
 CH.forEach((c,i)=>{const b=document.createElement('button');b.innerHTML=`${c[1]}<small>${c[2]}</small>`;b.onclick=()=>{$$('#chlist button').forEach(x=>x.classList.remove('on'));b.classList.add('on');fv.src='film/'+c[0];fv.play().catch(()=>{})};$('#chlist').appendChild(b)});
 fv.addEventListener('ended',()=>{const bs=$$('#chlist button');const i=bs.findIndex(b=>b.classList.contains('on'));if(i>=0&&i<bs.length-1)bs[i+1].click()});
+$('#playFull').onclick=()=>{$$('#chlist button').forEach(x=>x.classList.remove('on'));fv.src='film/The_World_Folded_Into_One_Building.mp4';fv.play().catch(()=>{})};
 if(CH.length){fv.src='film/'+CH[0][0];$('#chlist button').classList.add('on')}
 // ---------- ATLAS ----------
 const svg=d3.select('#globe');let scale=370,rot=[-55,-35];const proj=d3.geoOrthographic().translate([400,400]).clipAngle(90);const gp=d3.geoPath(proj);
