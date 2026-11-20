@@ -23,4 +23,6 @@ python3 -m http.server
 
 Then open http://localhost:8000.
 
-Map data: Natural Earth. Footage and photographs: project collection.
+Map data: Natural Earth.
+
+Footage and photographs: project collection, [Russian City Walks](https://www.youtube.com/@Walk_and_Travels) (permission fully granted by the author)
